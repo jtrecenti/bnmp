@@ -1,0 +1,8 @@
+data-raw/rds/*
+data-raw/xlsx/*
+.Rproj.user
+.Rhistory
+.Rdata
+.httr-oauth
+.DS_Store
+.quarto
