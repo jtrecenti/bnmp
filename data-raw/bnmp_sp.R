@@ -1,101 +1,5 @@
 # lula livre: 08/09/2019
 
-buscar_pag <- function(pag, id_muni, captcha_code, orgao) {
-  params <- list(`page` = pag, `size` = "100000", `sort` = "")
-  body <- list(
-    buscaOrgaoRecursivo = FALSE,
-    orgaoExpeditor = list(id = orgao),
-    idEstado = 26L,
-    idMunicipio = id_muni
-  ) |> purrr::compact()
-
-  if (is.null(orgao)) body$orgaoExpeditor <- NULL
-
-  res <- httr::POST(
-    url = "https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter",
-    query = params,
-    httr::set_cookies(portalbnmp = captcha_code),
-    httr::accept_json(),
-    encode = "json",
-    body = body
-  )
-
-  if (res$status_code != 200) {
-    usethis::ui_oops("Erro ao buscar página {pag + 1} no município {id_muni}")
-    return(tibble::tibble(erro = "erro"))
-  }
-
-  result_list <- httr::content(res, simplifyDataFrame = TRUE) |>
-    purrr::compact()
-
-  result_list$content <- tibble::as_tibble(result_list$content)
-
-  result_list
-}
-
-buscar_muni <- function(id_muni,
-                        captcha_code = captcha_code_get(),
-                        orgao = NULL) {
-
-  page <- 0
-
-  result_page <- buscar_pag(page, id_muni, captcha_code, orgao)
-
-  result_data <- result_page$content |>
-    dplyr::mutate(page = 1, .before = 1)
-
-  while (!result_page$last) {
-    page <- page + 1
-    usethis::ui_info("Buscando página {page + 1}")
-    result_page <- buscar_pag(page, id_muni, captcha_code, orgao)
-    result_data <- dplyr::bind_rows(
-      result_data,
-      result_page$content |> dplyr::mutate(page = page + 1, .before = 1)
-    )
-  }
-  result_data
-}
-
-listar_orgaos <- function(id_muni, captcha_code = captcha_code_get()) {
-  u <- paste0(
-    "https://portalbnmp.cnj.jus.br/bnmpportal/api/",
-    "pesquisa-pecas/orgaos/municipio/",
-    id_muni
-  )
-  r <- httr::GET(u, httr::set_cookies(portalbnmp = captcha_code))
-  r |>
-    httr::content(simplifyDataFrame = TRUE) |>
-    tibble::as_tibble() |>
-    with(id)
-}
-
-listar_municipios <- function(id_uf, captcha_code = captcha_code_get()) {
-  u <- paste0(
-    "https://portalbnmp.cnj.jus.br/bnmpportal/api/dominio/por-uf/",
-    id_uf
-  )
-  r <- httr::GET(u, httr::set_cookies(portalbnmp = captcha_code))
-  r |>
-    httr::content(simplifyDataFrame = TRUE) |>
-    tibble::as_tibble() |>
-    dplyr::select(-uf) |>
-    janitor::clean_names()
-}
-
-captcha_code_get <- function() {
-  paste0(
-    "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiY",
-    "XV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjkxMDY3OTg2fQ.Y8ik",
-    "VKDh_TEs42LSeopVErnfjdDO7XravweZUXROL_WwvTQFh7Cn90Nre9pIQkL",
-    "UkuuBTfzkf8uNVIm6a_cQQg"
-  )
-}
-
-
-# código captcha para acessar os documentos
-
-
-
 ## são paulo: precisa ser diferente porque tem mais de 10 mil linhas
 
 captcha_code <- captcha_code_get()
@@ -151,3 +55,6 @@ dados_sp |>
   print(n = 100)
 
 
+piggyback::pb_new_release(tag = "dados_sp")
+piggyback::pb_upload("data-raw/rds/da_bnmp_sp.rds", tag = "dados_sp")
+piggyback::pb_upload("data-raw/xlsx/da_bnmp_sp.xlsx", tag = "dados_sp")
