@@ -1,0 +1,53 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# bnmp
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of bnmp is to download and process data from the 'Banco Nacional de Monitoramento de Prisões' (BNMP) of the Brazilian National Council of Justice (CNJ).
+
+## Installation
+
+You can install the development version of bnmp from GitHub:
+
+```r
+remotes::install_github("jtrecenti/bnmp")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(bnmp)
+
+id_uf <- 26
+
+listar_municipios(id_uf)
+```
+
+```{r example2}
+# adamantina
+id_muni <- 8610
+buscar_muni(id_muni) |>
+  dplyr::glimpse()
+```
+
+
+## License
+
+MIT
