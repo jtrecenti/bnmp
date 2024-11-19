@@ -15,7 +15,7 @@ captcha_code_get <- function() {
 }
 
 buscar_pag <- function(pag, id_muni, captcha_code, orgao) {
-  params <- list(page = pag, size = "100000", sort = "")
+  params <- list(page = pag, size = "10", sort = "")
   body <- list(
     buscaOrgaoRecursivo = FALSE,
     orgaoExpeditor = list(id = orgao),
